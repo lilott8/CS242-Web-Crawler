@@ -19,7 +19,8 @@ public class Spidey {
         String[] eduSites = {"http://www.ucr.edu", "http://www.mit.edu", "http://www.siu.edu",
                 "http://www.niu.edu", "http://www.harvard.edu"};
 
-        if(!args[0].isEmpty()) {
+        if(args.length > 0) {
+        //if(!args[0].isEmpty()) {
             totalCrawlers = Integer.parseInt(args[0]);
             if(totalCrawlers > 5) {
                 totalCrawlers = 5;
