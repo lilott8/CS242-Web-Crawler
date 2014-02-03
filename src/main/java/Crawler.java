@@ -30,9 +30,6 @@ public class Crawler implements Runnable {
     private String mCurDomain;
     // validates urls so we know to follow them or not
     UrlValidator mURLValidator;
-    private RobotstxtConfig mRobotsConfig = new RobotstxtConfig();
-    private RobotstxtServer mRobotsServer;
-    private edu.uci.ics.crawler4j.fetcher.PageFetcher mPageFetcher;
 
     public Crawler() {
         this.mFolderPath = new File("/Volumes/Virtual Machines/spidey/");
@@ -40,7 +37,7 @@ public class Crawler implements Runnable {
         String url = "http://www.ucr.edu";
         try {
             this.mDocument = Jsoup.connect(url).get();
-            this.mRobotsServer = new RobotstxtServer(this.mRobotsConfig, this.mPageFetcher);
+            //this.mRobotsServer = new RobotstxtServer(this.mRobotsConfig, this.mPageFetcher);
             this.loadUrls();
         } catch (IOException e) {
             Log.d(TAG, String.format("Could not open our document: %s", e.toString()), Log.getLevel(3));
@@ -52,7 +49,7 @@ public class Crawler implements Runnable {
         this.mURLValidator = new UrlValidator(new String[]{"http", "https"});
         try {
             this.mDocument = Jsoup.connect(url).get();
-            this.mRobotsServer = new RobotstxtServer(this.mRobotsConfig, this.mPageFetcher);
+            //this.mRobotsServer = new RobotstxtServer(this.mRobotsConfig, this.mPageFetcher);
             this.loadUrls();
         } catch (IOException e) {
             Log.d(TAG, String.format("Could not open our document: %s", e.toString()), Log.getLevel(3));
@@ -77,14 +74,8 @@ public class Crawler implements Runnable {
             Log.d(TAG, String.format("Attempting to crawl: %s", el), Log.getLevel(6));
             Log.d(TAG, String.format("Queue size is: %s", this.getQueueSize()), Log.getLevel(6));
             try{
-                WebURL url = new WebURL();
-                url.setURL(el);
-                if(this.mRobotsServer.allows(url)) {
                 this.mDocument = Jsoup.connect(el).get(); // get the next page
                 this.loadUrls();
-                } else {
-                    Log.d(TAG, String.format("We cannot crawl: %s", el), Log.getLevel(4));
-                }
             } catch(IOException e) {
                 Log.d(TAG, String.format("We couldn't connect to: %s", el), Log.getLevel(5));
             }
