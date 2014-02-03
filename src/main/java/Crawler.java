@@ -27,6 +27,8 @@ public class Crawler implements Runnable {
     private String mCurDomain;
     // validates urls so we know to follow them or not
     UrlValidator mURLValidator;
+    // Our user agent
+    private String USER_AGENT = "Spideybot/.01 http://www.ucr.edu";
 
     public Crawler() {
         this.mFolderPath = new File("/Volumes/Virtual Machines/spidey/");
