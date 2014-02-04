@@ -4,7 +4,7 @@
 public abstract class Log {
 
 public static void d(String tag, String m, String l) {
-    System.out.println(String.format("%s\t%s:\t%s", tag, l, m));
+    System.out.println(String.format("%s:\t%s:\t%s", tag, l, m));
 }
 
     public static String getLevel(int l) {
