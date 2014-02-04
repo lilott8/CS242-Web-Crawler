@@ -36,19 +36,19 @@ public class Crawler implements Runnable {
     }
 
     public void run() {
-        Log.d(TAG, "Starting to run", Log.getLevel(7));
+        Log.d(TAG, "Starting to run", 7);
         String el;
-        Log.d(TAG, "Queue size: " + this.getQueueSize(), Log.getLevel(7));
+        Log.d(TAG, "Queue size: " + this.getQueueSize(), 7);
         this.printQueue();
         while(!this.mURLQueue.isEmpty()) {
             // pop the first element off the queue
             el = this.mURLQueue.remove(0);
-            Log.d(TAG, String.format("Attempting to crawl: %s", el), Log.getLevel(6));
-            Log.d(TAG, String.format("Queue size is: %s", this.getQueueSize()), Log.getLevel(6));
+            Log.d(TAG, String.format("Attempting to crawl: %s", el), 6);
+            Log.d(TAG, String.format("Queue size is: %s", this.getQueueSize()), 6);
             // parse the document
             this.mParser.parseDocument(el);
         }
-        Log.d(TAG, "We ran out of urls to parse", Log.getLevel(7));
+        Log.d(TAG, "We ran out of urls to parse", 7);
     }
 
     public int getQueueSize() {
@@ -56,9 +56,9 @@ public class Crawler implements Runnable {
     }
 
     public void printQueue() {
-        Log.d(TAG, "Printing queue...", Log.getLevel(7));
+        Log.d(TAG, "Printing queue...", 7);
         for(String e : this.mURLQueue) {
-            Log.d(TAG, e, Log.getLevel(7));
+            Log.d(TAG, e, 7);
         }
     }
 

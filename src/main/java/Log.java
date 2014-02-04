@@ -3,9 +3,13 @@
  */
 public abstract class Log {
 
-public static void d(String tag, String m, String l) {
-    System.out.println(String.format("%s:\t%s:\t%s", tag, l, m));
-}
+    public static int outputLevel = 4;
+
+    public static void d(String tag, String m, int l) {
+        if(l < outputLevel) {
+            System.out.println(String.format("%s:\t%s:\t%s", tag, getLevel(l), m));
+        }
+    }
 
     public static String getLevel(int l) {
         String level = "";
