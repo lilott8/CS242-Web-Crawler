@@ -1,7 +1,3 @@
-import org.apache.commons.validator.routines.UrlValidator;
-
-import org.jsoup.nodes.Element;
-import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -18,6 +14,7 @@ public class Crawler implements Runnable {
     private ArrayList<String> mURLQueue = new ArrayList<String>();
     // validates urls so we know to follow them or not
     //UrlValidator mURLValidator;
+    private Robots mRobots;
 
     // empty because of the implicit super() call
     // from the child, parser
@@ -28,6 +25,7 @@ public class Crawler implements Runnable {
         //this.mFolderPath = new File(fn);
         this.mParser = new Parser();
         this.mParser.parseDocument(url);
+        this.mRobots = new Robots();
         this.loadUrls();
     }
 
@@ -47,6 +45,7 @@ public class Crawler implements Runnable {
             Log.d(TAG, String.format("Queue size is: %s", this.getQueueSize()), 6);
             // parse the document
             this.mParser.parseDocument(el);
+            this.loadUrls();
         }
         Log.d(TAG, "We ran out of urls to parse", 7);
     }

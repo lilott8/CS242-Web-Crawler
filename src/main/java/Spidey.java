@@ -18,6 +18,8 @@ public class Spidey {
         // just a list of sites to start for our seed
         String[] eduSites = {"http://www.ucr.edu", "http://www.mit.edu", "http://www.siu.edu",
                 "http://www.niu.edu", "http://www.harvard.edu"};
+        boolean isDone = false;
+        String TAG = "Spidey";
 
         if(args.length > 0) {
         //if(!args[0].isEmpty()) {
@@ -45,6 +47,21 @@ public class Spidey {
             t.start();
         }
 
+        // Kill threads when done
+        int pos = 0;
+        while(!isDone) {
+            for(Crawler c : crawlers) {
+                if(c.getQueueSize() < 1) {
+                    pos = crawlers.indexOf(c);
+                    threads.get(pos).interrupt();
+                    threads.remove(pos);
+                }
+            }
+            if(threads.size() < 1) {
+                isDone = true;
+                Log.d(TAG, "We are done crawling!", 7);
+            }
+        }
         /**
          // easy way to cycle through them all
          for(Crawler c : crawlers) {

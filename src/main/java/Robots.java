@@ -1,11 +1,6 @@
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 
 /**
@@ -26,10 +21,10 @@ public class Robots {
         this.mDomain = url;
     }
 
-    public void getRobots() {
+    public void getRobots(String u) {
         // get the file
         try {
-            URL url = new URL(this.mDomain + "/robots.txt");;
+            URL url = new URL(u + "/robots.txt");;
             URLConnection con = url.openConnection();
             con.setConnectTimeout(1000);
             con.setReadTimeout(1000);
