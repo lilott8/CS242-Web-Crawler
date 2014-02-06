@@ -5,7 +5,7 @@ import java.util.HashMap;
 /**
  * Created by jason on 1/21/14.
  */
-public class Crawler extends Spidey implements Runnable {
+public class Crawler implements Runnable {
     // File for where to save things, not implemented
     // private File mFolderPath;
     // Parser to actually parse our documents
@@ -17,6 +17,7 @@ public class Crawler extends Spidey implements Runnable {
     // validates urls so we know to follow them or not
     //UrlValidator mURLValidator;
     private Robots mRobots;
+    private String mDomain;
     // empty because of the implicit super() call
     // from the child, parser
     public Crawler() {}
@@ -38,7 +39,6 @@ public class Crawler extends Spidey implements Runnable {
         Log.d(TAG, "Starting to run", 7);
         String el;
         Log.d(TAG, "Queue size: " + this.getQueueSize(), 7);
-        String domain = "";
         this.printQueue();
         while(!this.mURLQueue.isEmpty()) {
             // pop the first element off the queue
@@ -48,18 +48,22 @@ public class Crawler extends Spidey implements Runnable {
             // check for robots first, then add
             // if !super.isInRobots()
             try {
-                domain = Robots.getDomain(el);
-                Log.d(TAG, domain, 1);
+                this.mDomain = Robots.getDomain(el);
+                Log.d(TAG, this.mDomain, 1);
             } catch(URISyntaxException e) {/* do nothing */}
             // Check first here, not in robots
-            if(!RobotRules.isInRobots(domain)) {
+            if(!RobotRules.isInRobots(this.mDomain)) {
                 this.mRobots.getRobots(el);
             } else {
-                Log.d(TAG, domain + " is already in robots", 1);
+                Log.d(TAG, this.mDomain + " is already in robots", 1);
             }
             // parse the document
-            this.mParser.parseDocument(el);
-            this.loadUrls();
+            if(RobotRules.isAllowed(this.mDomain, el)) {
+                this.mParser.parseDocument(el);
+                this.loadUrls();
+            } else {
+                Log.d(TAG, "Not allowed to scan: " + el, 2);
+            }
         }
         Log.d(TAG, "We ran out of urls to parse", 7);
     }
@@ -76,7 +80,14 @@ public class Crawler extends Spidey implements Runnable {
     }
 
     public void loadUrls() {
-            this.mURLQueue.addAll(this.mParser.getUrls());
+        for(String s : this.mParser.getUrls()) {
+            /*
+                TODO: parse the url to get just the right side of the url
+             */
+            if(RobotRules.isAllowed(this.mDomain, s)) {
+                this.mURLQueue.add(s);
+            }
+        }
     }
 
     public boolean inQueue(String url) {
