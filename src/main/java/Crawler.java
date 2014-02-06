@@ -3,7 +3,7 @@ import java.util.ArrayList;
 /**
  * Created by jason on 1/21/14.
  */
-public class Crawler implements Runnable {
+public class Crawler extends Spidey implements Runnable {
     // File for where to save things, not implemented
     // private File mFolderPath;
     // Parser to actually parse our documents
@@ -15,7 +15,6 @@ public class Crawler implements Runnable {
     // validates urls so we know to follow them or not
     //UrlValidator mURLValidator;
     private Robots mRobots;
-
     // empty because of the implicit super() call
     // from the child, parser
     public Crawler() {}
@@ -43,6 +42,7 @@ public class Crawler implements Runnable {
             el = this.mURLQueue.remove(0);
             Log.d(TAG, String.format("Attempting to crawl: %s", el), 6);
             Log.d(TAG, String.format("Queue size is: %s", this.getQueueSize()), 6);
+            this.mRobots.getRobots(el);
             // parse the document
             this.mParser.parseDocument(el);
             this.loadUrls();
@@ -68,4 +68,6 @@ public class Crawler implements Runnable {
     public boolean inQueue(String url) {
         return this.mURLQueue.contains(url);
     }
+
+
 }

@@ -34,7 +34,6 @@ public class Parser extends Crawler {
     }
 
     public ArrayList<String> getUrls() {
-        System.out.println("Getting urls");
         ArrayList<String> links = new ArrayList<String>();
         // Get all the links on a page
         // Start building our seed
