@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by jason on 1/21/14.
@@ -69,5 +70,9 @@ public class Crawler extends Spidey implements Runnable {
         return this.mURLQueue.contains(url);
     }
 
+    public HashMap getRules() {return this.mRobots.getRules();}
+    public boolean isInRobots(String url) {
+        return super.isInRobots(url);
+    }
 
 }

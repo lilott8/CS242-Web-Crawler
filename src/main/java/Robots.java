@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,12 +13,17 @@ import java.util.Map;
 /**
  * Created by jason on 2/3/14.
  */
-public class Robots {
+public class Robots extends Crawler{
 
     // Domain of the robots.txt
     private String mDomain;
     private ArrayList<String> mAllow = new ArrayList<String>();
     private ArrayList<String> mDeny = new ArrayList<String>();
+    private HashMap<String, ArrayList> mIntermediaryRules = new HashMap<String, ArrayList>();
+    // The structure will work as follows:
+    // www.example.com -> Allow -> (allow crawling list)
+    // www.example.com -> Deny -> (deny crawling list)
+    private HashMap<String, HashMap> mRules = new HashMap<String, HashMap>();
     private int crawlSpeed;
     private String TAG = "robots";
 
@@ -31,6 +37,7 @@ public class Robots {
         // get the file
         try {
             u = this.getDomain(u);
+            this.mDomain = u;
         } catch(URISyntaxException e) {
             Log.d(TAG, String.format("Error getting domain: %s", e.getMessage()), 3);
         }
@@ -82,7 +89,13 @@ public class Robots {
                 } else {
                     this.crawlSpeed = 10;
                 }
-            }
+            }// while
+            // Add the rules to our intermediary rules
+            this.mIntermediaryRules.put("allow", this.mAllow);
+            this.mIntermediaryRules.put("deny", this.mDeny);
+            // add our ruleset to the actual rules
+            super.addRobots(this.mDomain, this.mIntermediaryRules);
+            // this.mRules.put(this.mDomain, this.mIntermediaryRules);
         } catch (IOException e) {
             Log.d(TAG, String.format("Error parsing: %s", e.getMessage()), 2);
         }
@@ -100,17 +113,18 @@ public class Robots {
         this.crawlSpeed = i;
     }
 
-    public String getDomain(String u) throws URISyntaxException {
+    public static String getDomain(String u) throws URISyntaxException {
         try {
             URL urls = new URL(u);
             String[] domain = urls.getHost().split("\\.");
             return domain[domain.length-2] + "." + domain[domain.length-1];
         } catch(MalformedURLException e) {
-            Log.d(TAG, "MalformedURL: " + e.getMessage(), 2);
+            Log.d("robots", "MalformedURL: " + e.getMessage(), 2);
             return null;
         }
     }
 
     public ArrayList<String> getDeny() { return this.mDeny;}
     public ArrayList<String> getAllow() { return this.mAllow;}
+    public HashMap getRules() {return this.mRules;}
 }
