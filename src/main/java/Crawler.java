@@ -1,3 +1,4 @@
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -37,13 +38,25 @@ public class Crawler extends Spidey implements Runnable {
         Log.d(TAG, "Starting to run", 7);
         String el;
         Log.d(TAG, "Queue size: " + this.getQueueSize(), 7);
+        String domain = "";
         this.printQueue();
         while(!this.mURLQueue.isEmpty()) {
             // pop the first element off the queue
             el = this.mURLQueue.remove(0);
             Log.d(TAG, String.format("Attempting to crawl: %s", el), 6);
             Log.d(TAG, String.format("Queue size is: %s", this.getQueueSize()), 6);
-            this.mRobots.getRobots(el);
+            // check for robots first, then add
+            // if !super.isInRobots()
+            try {
+                domain = Robots.getDomain(el);
+                Log.d(TAG, domain, 1);
+            } catch(URISyntaxException e) {/* do nothing */}
+            // Check first here, not in robots
+            if(!RobotRules.isInRobots(domain)) {
+                this.mRobots.getRobots(el);
+            } else {
+                Log.d(TAG, domain + " is already in robots", 1);
+            }
             // parse the document
             this.mParser.parseDocument(el);
             this.loadUrls();
@@ -69,10 +82,4 @@ public class Crawler extends Spidey implements Runnable {
     public boolean inQueue(String url) {
         return this.mURLQueue.contains(url);
     }
-
-    public HashMap getRules() {return this.mRobots.getRules();}
-    public boolean isInRobots(String url) {
-        return super.isInRobots(url);
-    }
-
 }

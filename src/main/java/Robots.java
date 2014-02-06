@@ -13,17 +13,11 @@ import java.util.Map;
 /**
  * Created by jason on 2/3/14.
  */
-public class Robots extends Crawler{
+public class Robots {
 
     // Domain of the robots.txt
     private String mDomain;
-    private ArrayList<String> mAllow = new ArrayList<String>();
-    private ArrayList<String> mDeny = new ArrayList<String>();
-    private HashMap<String, ArrayList> mIntermediaryRules = new HashMap<String, ArrayList>();
-    // The structure will work as follows:
-    // www.example.com -> Allow -> (allow crawling list)
-    // www.example.com -> Deny -> (deny crawling list)
-    private HashMap<String, HashMap> mRules = new HashMap<String, HashMap>();
+    // crawl speed for a website
     private int crawlSpeed;
     private String TAG = "robots";
 
@@ -36,22 +30,25 @@ public class Robots extends Crawler{
     public void getRobots(String u) {
         // get the file
         try {
-            u = this.getDomain(u);
+            u = Robots.getDomain(u);
             this.mDomain = u;
         } catch(URISyntaxException e) {
             Log.d(TAG, String.format("Error getting domain: %s", e.getMessage()), 3);
+            return;
         }
-        try {
-            URL url = new URL("http://www." + u + "/robots.txt");
-            URLConnection con = url.openConnection();
-            con.setConnectTimeout(1000);
-            con.setReadTimeout(1000);
-            InputStream in = con.getInputStream();
-            this.parseRobots(in);
-            in.close();
-        } catch(Exception e) {
-            Log.d(TAG, String.format("Error parsing url: %s, with %s", u, e.getMessage()), 4);
-        }
+        //if(!super.isInRobots(u)) {
+            try {
+                URL url = new URL("http://www." + u + "/robots.txt");
+                URLConnection con = url.openConnection();
+                con.setConnectTimeout(1000);
+                con.setReadTimeout(1000);
+                InputStream in = con.getInputStream();
+                this.parseRobots(in);
+                in.close();
+            } catch(Exception e) {
+                Log.d(TAG, String.format("Error parsing url: %s, with %s", u, e.getMessage()), 4);
+            }
+        //}
     }
 
     public void parseRobots(InputStream in) {
@@ -72,30 +69,23 @@ public class Robots extends Crawler{
                     // Log.d(TAG, "Disallow: " + rule[1], 1);
                     // If we get a deny with the /, deny everything
                     if(rule[1].equals("/")) {
-                        this.mAllow.clear();
-                        this.mAllow.add("DENY_ALL");
+                        RobotRules.clearRuleSet(this.mDomain, "allow");
+                        RobotRules.addRule(this.mDomain, "deny", "DENY_ALL");
                     }
-                    this.mDeny.add(rule[1]);
+                    RobotRules.addRule(this.mDomain, "deny", rule[1]);
                 // Check for allows
                 } else if(rule[0].toLowerCase().equals("allow")){
                     if(rule[1].equals("/")) {
-                        this.mDeny.clear();
-                        this.mDeny.add("ALLOW_ALL");
+                        RobotRules.clearRuleSet(this.mDomain, "deny");
+                        RobotRules.addRule(this.mDomain, "allow", "ALLOW_ALL");
                     }
-                    this.mAllow.add(rule[1]);
-                    // Log.d(TAG, "Allow: " + rule[1], 1);
+                    RobotRules.addRule(this.mDomain, "allow", rule[1]);
                 } else if(rule[0].toLowerCase().equals("crawl-delay")){
                     this.crawlSpeed = Integer.parseInt(rule[1]);
                 } else {
                     this.crawlSpeed = 10;
                 }
             }// while
-            // Add the rules to our intermediary rules
-            this.mIntermediaryRules.put("allow", this.mAllow);
-            this.mIntermediaryRules.put("deny", this.mDeny);
-            // add our ruleset to the actual rules
-            super.addRobots(this.mDomain, this.mIntermediaryRules);
-            // this.mRules.put(this.mDomain, this.mIntermediaryRules);
         } catch (IOException e) {
             Log.d(TAG, String.format("Error parsing: %s", e.getMessage()), 2);
         }
@@ -123,8 +113,4 @@ public class Robots extends Crawler{
             return null;
         }
     }
-
-    public ArrayList<String> getDeny() { return this.mDeny;}
-    public ArrayList<String> getAllow() { return this.mAllow;}
-    public HashMap getRules() {return this.mRules;}
 }

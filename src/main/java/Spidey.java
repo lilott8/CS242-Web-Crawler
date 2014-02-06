@@ -8,7 +8,9 @@ import java.util.HashMap;
  */
 public class Spidey {
 
-    private HashMap<String, HashMap> mRobots = new HashMap<String, HashMap>();
+    private HashMap<String, HashMap<String, ArrayList<String>>> mRobots =
+            new HashMap<String, HashMap<String, ArrayList<String>>>();
+    public String TAG = "spidey";
 
     public Spidey() {}
 
@@ -24,9 +26,9 @@ public class Spidey {
         // just a list of sites to start for our seed
         String[] eduSites = {"http://www.ucr.edu", "http://www.mit.edu", "http://www.siu.edu",
                 "http://www.niu.edu", "http://www.harvard.edu"};
-
-        boolean isDone = false;
         String TAG = "Spidey";
+        // boolean check for if all our threads are out of work
+        boolean isDone = false;
 
         if(args.length > 0) {
         //if(!args[0].isEmpty()) {
@@ -75,17 +77,5 @@ public class Spidey {
          **/
 
         System.out.println("There are " + crawlers.size() + " crawlers ready to sling!");
-    }
-
-    public boolean isInRobots(String url) {
-        try {
-            return this.mRobots.containsKey(Robots.getDomain(url));
-        } catch(URISyntaxException e) {
-            return false;
-        }
-    }
-
-    public void addRobots(String url, HashMap robots) {
-        this.mRobots.put(url, robots);
     }
 }
