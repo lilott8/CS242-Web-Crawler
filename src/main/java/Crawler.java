@@ -45,8 +45,8 @@ public class Crawler implements Runnable {
         while(!LinkQueue.isQueueEmpty(this.mTid)) {
             // pop the first element off the queue
             el = LinkQueue.getUrl(this.mTid);
-            Log.d(TAG, String.format("Attempting to crawl: %s", el), 6);
-            Log.d(TAG, String.format("Queue size is: %s", this.getQueueSize()), 6);
+            Log.d(TAG, String.format("Attempting to crawl: %s", el), 7);
+            Log.d(TAG, String.format("tid %d's Queue size is: %s", this.mTid, this.getQueueSize()), 7);
             // check for robots first, then add
             // if !super.isInRobots()
             try {
@@ -54,7 +54,7 @@ public class Crawler implements Runnable {
             } catch(URISyntaxException e) {/* do nothing */}
             // Check first here, not in robots
             if(!RobotRules.isInRobots(this.mDomain)) {
-                Log.d(TAG, this.mDomain + " is not in robots", 1);
+                Log.d(TAG, this.mDomain + " is not in robots", 4);
                 this.mRobots.getRobots(el);
             }
             /**

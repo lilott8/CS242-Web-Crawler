@@ -29,7 +29,7 @@ public class Parser {
         try{
             this.mDocument = Jsoup.connect(url).get(); // get the next page
         } catch(IOException e) {
-            Log.d(TAG,String.format("Error connecting to %s: %s", url, e.toString()), 4);
+            Log.d(TAG,String.format("Error connecting to %s: %s", url, e.toString()), 5);
         }
     }
 
@@ -42,15 +42,15 @@ public class Parser {
             String url = e.attr("href");
             // make sure this is a valid URL
             if(this.mURLValidator.isValid(url)) {
-                Log.d(TAG, String.format("This url: %s is valid", url), 6);
+                Log.d(TAG, String.format("This url: %s is valid", url), 7);
                 // Scrape all the urls and worry about checking
                 // if we have them in the LinkQueue class
                 links.add(url);
             } else {
-                Log.d(TAG, String.format("This url: %s is not a valid url", url), 6);
+                Log.d(TAG, String.format("This url: %s is not a valid url", url), 7);
             }
         }
-        Log.d(TAG, String.format("Size of links: %s", links.size()), 6);
+        Log.d(TAG, String.format("Size of links: %s", links.size()), 7);
         return links;
     }
 

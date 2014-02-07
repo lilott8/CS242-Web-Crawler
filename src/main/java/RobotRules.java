@@ -74,7 +74,7 @@ public class RobotRules {
     public static void printKeys() {
         Set<String> s = mRules.keySet();
         for(String q : s) {
-            Log.d(TAG, "Key: " + s, 3);
+            Log.d(TAG, "Key: " + s, 7);
         }
     }
 }
