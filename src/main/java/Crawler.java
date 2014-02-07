@@ -1,4 +1,5 @@
 import crawlercommons.robots.RobotUtils;
+import sun.awt.image.ImageWatched;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -15,16 +16,15 @@ public class Crawler implements Runnable {
     // just for troubleshooting
     public String TAG = "crawler";
     // Our fake queue, this is easier to work with than a queue in java
-    private ArrayList<String> mURLQueue = new ArrayList<String>();
+    //private ArrayList<String> mURLQueue = new ArrayList<String>();
     // validates urls so we know to follow them or not
     //UrlValidator mURLValidator;
     private Robots mRobots;
     private String mDomain;
-    // empty because of the implicit super() call
-    // from the child, parser
-    public Crawler() {}
+    private int mTid;
 
-    // Constructor
+    // Constructors
+    public Crawler() {}
     public Crawler(String fn, String url) {
         //this.mFolderPath = new File(fn);
         this.mParser = new Parser();
@@ -33,9 +33,7 @@ public class Crawler implements Runnable {
         this.loadUrls();
     }
 
-    public ArrayList<String> getQueue() {
-        return this.mURLQueue;
-    }
+    public ArrayList<String> getQueue() {return LinkQueue.getQueue(this.mTid);}
 
     public void run() {
         String el;
@@ -44,9 +42,9 @@ public class Crawler implements Runnable {
         Log.d(TAG, "Queue size: " + this.getQueueSize(), 7);
         this.printQueue();
 
-        while(!this.mURLQueue.isEmpty()) {
+        while(!LinkQueue.isQueueEmpty(this.mTid)) {
             // pop the first element off the queue
-            el = this.mURLQueue.remove(0);
+            el = LinkQueue.getUrl(this.mTid);
             Log.d(TAG, String.format("Attempting to crawl: %s", el), 6);
             Log.d(TAG, String.format("Queue size is: %s", this.getQueueSize()), 6);
             // check for robots first, then add
@@ -71,12 +69,12 @@ public class Crawler implements Runnable {
     }
 
     public int getQueueSize() {
-        return this.mURLQueue.size();
+        return LinkQueue.getQueueSize(this.mTid);
     }
 
     public void printQueue() {
         Log.d(TAG, "Printing queue...", 7);
-        for(String e : this.mURLQueue) {
+        for(String e : LinkQueue.getQueue(this.mTid)) {
             Log.d(TAG, e, 7);
         }
     }
@@ -91,13 +89,11 @@ public class Crawler implements Runnable {
                 TODO: parse the url to get just the right side of the url
              */
             // Log.d(TAG, s, 1);
-            if(RobotRules.isAllowed(this.mDomain, s) && !this.inQueue(s)) {
-                this.mURLQueue.add(s);
+            if(RobotRules.isAllowed(this.mDomain, s)) {
+                LinkQueue.addLink(this.mTid, s);
             }
         }
     }
 
-    public boolean inQueue(String url) {
-        return this.mURLQueue.contains(url);
-    }
+    public void setTid(int i) {this.mTid = i;}
 }

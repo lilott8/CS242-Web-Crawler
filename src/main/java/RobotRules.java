@@ -13,7 +13,7 @@ public class RobotRules {
     public static final String TAG = "robotrules";
 
 
-    public static void addRule(String domain, final ArrayList<String> allow, final ArrayList<String> deny) {
+    public static synchronized void addRule(String domain, final ArrayList<String> allow, final ArrayList<String> deny) {
         Map<String, ArrayList<String>> temp = new HashMap<String, ArrayList<String>>();
         temp.put("allow", allow);
         temp.put("deny", deny);

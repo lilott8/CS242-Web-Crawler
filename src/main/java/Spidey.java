@@ -9,6 +9,7 @@ import java.util.HashMap;
 public class Spidey {
 
     public String TAG = "spidey";
+    private static int mThreadCount;
 
     public Spidey() {}
 
@@ -38,10 +39,13 @@ public class Spidey {
             totalCrawlers = 2;
         }
 
+        mThreadCount = totalCrawlers;
+
         // This primes our seed for each crawler
         for(int i=0; i<totalCrawlers;i++) {
             // This allows us to save our crawler in our arraylist
             Crawler c = new Crawler(filePath, eduSites[i]);
+            c.setTid(i);
             crawlers.add(c);
             // let it be threadable
             Thread worker = new Thread(c);
@@ -76,4 +80,6 @@ public class Spidey {
 
         System.out.println("There are " + crawlers.size() + " crawlers ready to sling!");
     }
+
+    public static int getThreadCount() {return mThreadCount;}
 }

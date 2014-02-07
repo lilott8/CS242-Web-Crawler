@@ -10,7 +10,7 @@ import java.util.ArrayList;
 /**
  * Created by jason on 2/3/14.
  */
-public class Parser extends Crawler {
+public class Parser {
 
     // Our connection to websites
     protected Document mDocument;
@@ -43,12 +43,9 @@ public class Parser extends Crawler {
             // make sure this is a valid URL
             if(this.mURLValidator.isValid(url)) {
                 Log.d(TAG, String.format("This url: %s is valid", url), 6);
-                // Add the link to our arraylist, if it doesn't contain it
-                if(!super.inQueue(url)) {
-                    links.add(url);
-                } else {
-                    Log.d(TAG, String.format("We already have: %s in our queue", e.attr("href")), 6);
-                }
+                // Scrape all the urls and worry about checking
+                // if we have them in the LinkQueue class
+                links.add(url);
             } else {
                 Log.d(TAG, String.format("This url: %s is not a valid url", url), 6);
             }
