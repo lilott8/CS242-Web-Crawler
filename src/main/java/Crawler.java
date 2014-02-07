@@ -1,3 +1,5 @@
+import crawlercommons.robots.RobotUtils;
+
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,10 +38,12 @@ public class Crawler implements Runnable {
     }
 
     public void run() {
-        Log.d(TAG, "Starting to run", 7);
         String el;
+
+        Log.d(TAG, "Starting to run", 7);
         Log.d(TAG, "Queue size: " + this.getQueueSize(), 7);
         this.printQueue();
+
         while(!this.mURLQueue.isEmpty()) {
             // pop the first element off the queue
             el = this.mURLQueue.remove(0);
@@ -49,21 +53,19 @@ public class Crawler implements Runnable {
             // if !super.isInRobots()
             try {
                 this.mDomain = Robots.getDomain(el);
-                Log.d(TAG, this.mDomain, 1);
             } catch(URISyntaxException e) {/* do nothing */}
             // Check first here, not in robots
             if(!RobotRules.isInRobots(this.mDomain)) {
+                Log.d(TAG, this.mDomain + " is not in robots", 1);
                 this.mRobots.getRobots(el);
-            } else {
-                Log.d(TAG, this.mDomain + " is already in robots", 1);
             }
-            // parse the document
-            if(RobotRules.isAllowed(this.mDomain, el)) {
-                this.mParser.parseDocument(el);
-                this.loadUrls();
-            } else {
-                Log.d(TAG, "Not allowed to scan: " + el, 2);
-            }
+            /**
+             * We can do this without checking, because we wouldn't
+             * be here in the first place.
+             */
+            this.mParser.parseDocument(el);
+            this.loadUrls();
+            RobotRules.printKeys();
         }
         Log.d(TAG, "We ran out of urls to parse", 7);
     }
@@ -79,12 +81,17 @@ public class Crawler implements Runnable {
         }
     }
 
+    /**
+     * This loads only the urls that are not in the deny portion of
+     * a robots.txt and not already in the queue
+     */
     public void loadUrls() {
         for(String s : this.mParser.getUrls()) {
             /*
                 TODO: parse the url to get just the right side of the url
              */
-            if(RobotRules.isAllowed(this.mDomain, s)) {
+            // Log.d(TAG, s, 1);
+            if(RobotRules.isAllowed(this.mDomain, s) && !this.inQueue(s)) {
                 this.mURLQueue.add(s);
             }
         }

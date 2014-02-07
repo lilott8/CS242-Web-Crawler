@@ -8,8 +8,6 @@ import java.util.HashMap;
  */
 public class Spidey {
 
-    private HashMap<String, HashMap<String, ArrayList<String>>> mRobots =
-            new HashMap<String, HashMap<String, ArrayList<String>>>();
     public String TAG = "spidey";
 
     public Spidey() {}
@@ -24,8 +22,8 @@ public class Spidey {
         // temp path, not implemented
         String filePath = "/Volumes/Virtual Machines/spidey/";
         // just a list of sites to start for our seed
-        String[] eduSites = {"http://www.ucr.edu", "http://www.mit.edu", "http://www.siu.edu",
-                "http://www.niu.edu", "http://www.harvard.edu"};
+        String[] eduSites = {"http://www.mit.edu", "http://www.siu.edu",
+                "http://www.niu.edu", "http://www.harvard.edu", "http://www.ucr.edu"};
         String TAG = "Spidey";
         // boolean check for if all our threads are out of work
         boolean isDone = false;

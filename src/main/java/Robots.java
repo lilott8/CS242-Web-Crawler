@@ -27,33 +27,35 @@ public class Robots {
         this.mDomain = url;
     }
 
+    /**
+     * We will need to tweak this a little bit
+     * If the http doesn't resolve, try the
+     * https, if not that, minus the www, and so on
+     * @param u
+     */
     public void getRobots(String u) {
-        // get the file
         try {
             u = Robots.getDomain(u);
             this.mDomain = u;
-        } catch(URISyntaxException e) {
-            Log.d(TAG, String.format("Error getting domain: %s", e.getMessage()), 3);
-            return;
+            URL url = new URL("http://www." + u + "/robots.txt");
+            URLConnection con = url.openConnection();
+            con.setConnectTimeout(1000);
+            con.setReadTimeout(1000);
+            InputStream in = con.getInputStream();
+            this.parseRobots(in);
+            in.close();
+        } catch(Exception e) {
+            Log.d(TAG, String.format("Error parsing url: %s, with %s\t%s","http://www." + u + "/robots.txt", e.getMessage(), e.fillInStackTrace()), 4);
         }
-        //if(!super.isInRobots(u)) {
-            try {
-                URL url = new URL("http://www." + u + "/robots.txt");
-                URLConnection con = url.openConnection();
-                con.setConnectTimeout(1000);
-                con.setReadTimeout(1000);
-                InputStream in = con.getInputStream();
-                this.parseRobots(in);
-                in.close();
-            } catch(Exception e) {
-                Log.d(TAG, String.format("Error parsing url: %s, with %s", u, e.getMessage()), 4);
-            }
-        //}
     }
 
     public void parseRobots(InputStream in) {
         String line;
         String[] rule;
+
+        ArrayList<String> deny = new ArrayList<String>();
+        ArrayList<String> allow = new ArrayList<String>();
+
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         try {
             while((line = br.readLine()) != null) {
@@ -64,39 +66,36 @@ public class Robots {
                     rule[0] = rule[0].replaceAll("\\s","");
                     rule[1] = rule[1].replaceAll("\\s","");
                 }
-                // Put the rule where it belongs
-                if(rule[0].toLowerCase().equals("disallow")) {
-                    // Log.d(TAG, "Disallow: " + rule[1], 1);
-                    // If we get a deny with the /, deny everything
-                    if(rule[1].equals("/")) {
-                        RobotRules.clearRuleSet(this.mDomain, "allow");
-                        RobotRules.addRule(this.mDomain, "deny", "DENY_ALL");
-                    }
-                    RobotRules.addRule(this.mDomain, "deny", rule[1]);
-                // Check for allows
-                } else if(rule[0].toLowerCase().equals("allow")){
-                    if(rule[1].equals("/")) {
-                        RobotRules.clearRuleSet(this.mDomain, "deny");
-                        RobotRules.addRule(this.mDomain, "allow", "ALLOW_ALL");
-                    }
-                    RobotRules.addRule(this.mDomain, "allow", rule[1]);
-                } else if(rule[0].toLowerCase().equals("crawl-delay")){
-                    this.crawlSpeed = Integer.parseInt(rule[1]);
-                } else {
-                    this.crawlSpeed = 10;
+                if(rule[0].toLowerCase().equals("user-agent") && rule[1].equals("*")) {
+                    // Put the rule where it belongs
+                    if(rule[0].toLowerCase().equals("disallow")) {
+                        // If we get a deny with the /, deny everything
+                        if(rule[1].equals("/")) {
+                            RobotRules.clearRuleSet(this.mDomain, "allow");
+                            deny.add("DENY_ALL");
+                            break;
+                        }
+                        deny.add(rule[1]);
+                        // Check for allows
+                    } else if(rule[0].toLowerCase().equals("allow")){
+                        if(rule[1].equals("/")) {
+                            RobotRules.clearRuleSet(this.mDomain, "deny");
+                            allow.add("ALLOW_ALL");
+                            break;
+                        }
+                        allow.add(rule[1]);
+                    } else if(rule[0].toLowerCase().equals("crawl-delay")){
+                        this.crawlSpeed = Integer.parseInt(rule[1]);
+                    } else {/** Empty else **/}
                 }
             }// while
+            // set crawl speed if it isnt set yet
+            if(this.crawlSpeed <0) {this.crawlSpeed = 10;}
         } catch (IOException e) {
-            Log.d(TAG, String.format("Error parsing: %s", e.getMessage()), 2);
+            Log.d(TAG, String.format("Error parsing: %s", e.toString()), 2);
+            return;
         }
-    }
-
-    public boolean isAllowed(String url) {
-        return false;
-    }
-
-    public boolean isDenied(String url) {
-        return false;
+        RobotRules.addRule(this.mDomain, allow, deny);
     }
 
     public void setCrawlSpeed(int i) {
