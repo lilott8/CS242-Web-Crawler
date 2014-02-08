@@ -1,3 +1,5 @@
+import com.sun.tools.corba.se.idl.TypedefEntry;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,6 +87,7 @@ public class RobotRules {
      * @return boolean of if the rule is in the mRules
      */
     public static boolean isInRobots(String domain) {
+        RobotRules.printRules(domain);
         return mRules.containsKey(domain);
     }
 
@@ -142,6 +145,24 @@ public class RobotRules {
             return mDirectives.get(key.toLowerCase());
         } catch(NullPointerException e) {
             return 1000;
+        }
+    }
+
+    public static void printRules(String domain) {
+        Map<String, ArrayList<String>> hmTemp = new HashMap<String, ArrayList<String>>();
+        hmTemp = mRules.get(domain);
+        StringBuilder dsb = new StringBuilder();
+        try {
+            for(String s : hmTemp.get("deny")) {
+                dsb.append(s+"\t");
+            }
+            StringBuilder asb = new StringBuilder();
+            for(String s : hmTemp.get("allow")) {
+                asb.append(s + "\t");
+            }
+            Log.d(TAG, String.format("%s\n %s", dsb.toString(), asb.toString()), 3);
+        } catch (NullPointerException e) {
+            Log.d(TAG, "Error printingRules", 3);
         }
     }
 }

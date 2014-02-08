@@ -58,6 +58,7 @@ public class Spidey {
             t.start();
         }
 
+        /*
         // Kill threads when done
         int pos = 0;
         while(!isDone) {
@@ -71,7 +72,7 @@ public class Spidey {
                 isDone = true;
                 Log.d(TAG, "We are done crawling!", 7);
             }
-        }
+        } */
         /**
          // easy way to cycle through them all
          for(Crawler c : crawlers) {

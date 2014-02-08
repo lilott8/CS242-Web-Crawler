@@ -41,7 +41,7 @@ public class Crawler implements Runnable {
         String el;
 
         Log.d(TAG, "Starting to run", 7);
-        Log.d(TAG, "Queue size: " + this.getQueueSize(), 7);
+        Log.d(TAG, "Queue size: " + this.getQueueSize(), 2);
         this.printQueue();
 
         while(!LinkQueue.isQueueEmpty(this.mTid)) {
@@ -71,7 +71,12 @@ public class Crawler implements Runnable {
     }
 
     public int getQueueSize() {
-        return LinkQueue.getQueueSize(this.mTid);
+        Log.d(TAG, Integer.toString(this.mTid), 1);
+        try {
+            return LinkQueue.getQueueSize(this.mTid);
+        } catch(NullPointerException e) {
+            return 0;
+        }
     }
 
     public void printQueue() {
@@ -106,7 +111,7 @@ public class Crawler implements Runnable {
                 if(RobotRules.isAllowed(this.mDomain, args[1])) {
                     LinkQueue.addLink(this.mTid, s);
                 }
-                Log.d(TAG, String.format("We cannot crawl: %s", s), 3);
+                //Log.d(TAG, String.format("We cannot crawl: %s", s), 3);
             } catch(ArrayIndexOutOfBoundsException e) {
                 if(RobotRules.isAllowed(this.mDomain, "")) {
                     LinkQueue.addLink(this.mTid, s);
