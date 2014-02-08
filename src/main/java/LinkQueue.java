@@ -48,4 +48,8 @@ public class LinkQueue {
     public static boolean inQueue(int tid, String u) {
         return mLinkQueue.get(tid).contains(u);
     }
+
+    public static String getFirstPartOfURL(String s) {
+        return s.split("/")[0];
+    }
 }

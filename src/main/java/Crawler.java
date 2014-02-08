@@ -89,6 +89,7 @@ public class Crawler implements Runnable {
                 TODO: parse the url to get just the right side of the url
              */
             // Log.d(TAG, s, 1);
+            //Log.d(TAG, String.format("Right part of url: %s", LinkQueue.getFirstPartOfURL(s)), 1);
             if(RobotRules.isAllowed(this.mDomain, s)) {
                 LinkQueue.addLink(this.mTid, s);
             }

@@ -23,7 +23,7 @@ public class Spidey {
         // temp path, not implemented
         String filePath = "/Volumes/Virtual Machines/spidey/";
         // just a list of sites to start for our seed
-        String[] eduSites = {"http://www.niu.edu", "http://www.siu.edu",
+        String[] eduSites = {"http://youtube.com", "http://www.niu.edu", "http://www.siu.edu",
                 "http://www.mit.edu", "http://www.harvard.edu", "http://www.ucr.edu"};
         String TAG = "Spidey";
         // boolean check for if all our threads are out of work
