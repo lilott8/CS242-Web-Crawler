@@ -1,7 +1,9 @@
 import crawlercommons.robots.RobotUtils;
 import sun.awt.image.ImageWatched;
 
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -54,7 +56,7 @@ public class Crawler implements Runnable {
             } catch(URISyntaxException e) {/* do nothing */}
             // Check first here, not in robots
             if(!RobotRules.isInRobots(this.mDomain)) {
-                Log.d(TAG, this.mDomain + " is not in robots", 4);
+                Log.d(TAG, this.mDomain + " is not in robots", 7);
                 this.mRobots.getRobots(el);
             }
             /**
@@ -84,17 +86,34 @@ public class Crawler implements Runnable {
      * a robots.txt and not already in the queue
      */
     public void loadUrls() {
+        String path;
+        String[] args;
         for(String s : this.mParser.getUrls()) {
             /*
                 TODO: parse the url to get just the right side of the url
              */
             // Log.d(TAG, s, 1);
             //Log.d(TAG, String.format("Right part of url: %s", LinkQueue.getFirstPartOfURL(s)), 1);
-            if(RobotRules.isAllowed(this.mDomain, s)) {
-                LinkQueue.addLink(this.mTid, s);
+            try {
+                URL url = new URL(s);
+                path = url.getPath();
+            } catch (MalformedURLException e) {
+                path = s;
+            }
+            // Log.d(TAG, path, 3);
+            args = path.split("/");
+            try {
+                if(RobotRules.isAllowed(this.mDomain, args[1])) {
+                    LinkQueue.addLink(this.mTid, s);
+                }
+                Log.d(TAG, String.format("We cannot crawl: %s", s), 3);
+            } catch(ArrayIndexOutOfBoundsException e) {
+                if(RobotRules.isAllowed(this.mDomain, "")) {
+                    LinkQueue.addLink(this.mTid, s);
+                }
+                break;
             }
         }
     }
-
     public void setTid(int i) {this.mTid = i;}
 }

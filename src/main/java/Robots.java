@@ -59,7 +59,7 @@ public class Robots {
             for(String s : this.accessMethods) {
                 // form the URI for the robots
                 url = new URL(s + u + "/robots.txt");
-                Log.d(TAG, String.format("Attempting to grab: %s", s+u+"/robots.txt"), 2);
+                Log.d(TAG, String.format("Attempting to grab: %s", s+u+"/robots.txt"), 6);
                 try {
                     // attempt to get the robots file
                     this.getInputStream(url);
@@ -76,7 +76,7 @@ public class Robots {
 
     public void parseRobots(InputStream in) {
         String line;
-        String[] rule = new String[2];
+        String[] rule;
 
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         try {
@@ -114,60 +114,6 @@ public class Robots {
         } catch(IOException e) {
             Log.d(TAG, String.format("IOException: %s", e.getMessage()), 3);
         }
-        /*
-        ArrayList<String> deny = new ArrayList<String>();
-        ArrayList<String> allow = new ArrayList<String>();
-        try {
-            while((line = br.readLine()) != null) {
-                // Split the robots directives
-                // we need to ignore this
-                if((line.indexOf("#") == 0)) {
-                    // do nothing
-                    Log.d(TAG, String.format("We found a comment: %s", line), 3);
-                } else if(line.contains(":")){
-                    rule = line.split(":");
-                    // Strip all the white space
-                    if(rule.length > 1) {
-                        try {
-                            rule[0] = rule[0].replaceAll("\\s","");
-                            rule[1] = rule[1].replaceAll("\\s","");
-                        } catch(ArrayIndexOutOfBoundsException e) {
-                            Log.d(TAG, String.format("Line is: %s", line), 3);
-                        }
-
-                    if(rule[0].toLowerCase().equals("user-agent") && rule[1].equals("*")) {
-                        // Put the rule where it belongs
-                        if(rule[0].toLowerCase().equals("disallow")) {
-                            // If we get a deny with the /, deny everything
-                            if(rule[1].equals("/")) {
-                                RobotRules.clearRuleSet(this.mDomain, "allow");
-                                deny.add("DENY_ALL");
-                                break;
-                            }
-                            deny.add(rule[1]);
-                            // Check for allows
-                        } else if(rule[0].toLowerCase().equals("allow")){
-                            if(rule[1].equals("/")) {
-                                RobotRules.clearRuleSet(this.mDomain, "deny");
-                                allow.add("ALLOW_ALL");
-                                break;
-                            }
-                            allow.add(rule[1]);
-                        } else if(rule[0].toLowerCase().equals("crawl-delay")){
-                            this.crawlSpeed = Integer.parseInt(rule[1]);
-                        } else {}
-                    }
-                    } else {
-                        Log.d(TAG, String.format("Rule does not apply: %s", line), 3);
-                    }
-                }
-            }// while
-            // set crawl speed if it isnt set yet
-            if(this.crawlSpeed <0) {this.crawlSpeed = 10;}
-        } catch (IOException e) {
-            Log.d(TAG, String.format("Error parsing: %s", e.toString()), 3);
-        }
-        */
     }
 
     public void setCrawlSpeed(int i) {
