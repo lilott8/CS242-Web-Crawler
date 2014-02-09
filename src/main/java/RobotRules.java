@@ -75,7 +75,7 @@ public class RobotRules {
      * @param domain string of the domain
      * @param action string of what action to be removed
      */
-    public static void clearRuleSet(String domain, String action) {
+    public static synchronized void clearRuleSet(String domain, String action) {
         try {
             mRules.get(domain).get(action).clear();
         } catch(NullPointerException e){}
@@ -86,7 +86,7 @@ public class RobotRules {
      * @param domain what to test against
      * @return boolean of if the rule is in the mRules
      */
-    public static boolean isInRobots(String domain) {
+    public static synchronized boolean isInRobots(String domain) {
         RobotRules.printRules(domain);
         return mRules.containsKey(domain);
     }
@@ -103,7 +103,7 @@ public class RobotRules {
      *  - deny from the robots
      *  - else scan the site
      */
-    public static boolean isAllowed(String domain, String url) {
+    public static synchronized boolean isAllowed(String domain, String url) {
         int size_of_allow = sizeOfHashMap(domain, "allow");
         int size_of_deny = sizeOfHashMap(domain, "deny");
 
@@ -125,7 +125,7 @@ public class RobotRules {
         }
     }
 
-    public static int sizeOfHashMap(String domain, String action) {
+    public static synchronized int sizeOfHashMap(String domain, String action) {
             try {
                 return mRules.get(domain).get(action).size();
             } catch (NullPointerException e) {

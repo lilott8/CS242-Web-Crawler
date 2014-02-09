@@ -35,12 +35,12 @@ public class LinkQueue {
         return mLinkQueue.get(tid);
     }
 
-    public synchronized static String getUrl(int tid) {
+    public static synchronized String getUrl(int tid) {
         Log.d(TAG, String.format("Bucket: %d\t Queue Size: %d", tid, mLinkQueue.get(tid).size()), 2);
         return mLinkQueue.get(tid).remove(0);
     }
 
-    public static boolean isQueueEmpty(int tid) throws NullPointerException {
+    public static synchronized boolean isQueueEmpty(int tid) throws NullPointerException {
         return mLinkQueue.get(tid).isEmpty();
     }
 
