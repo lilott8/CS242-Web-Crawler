@@ -16,14 +16,17 @@ public class MySQLHelper {
     private Statement statement = null;
     private PreparedStatement pStatement = null;
     private ResultSet resultSet = null;
+    private boolean dbAvailable;
 
     public MySQLHelper() {
         this.connector = Connector.getInstance();
         this.connection = this.connector.getConnection();
         try {
             this.statement = this.connection.createStatement();
-        } catch(SQLException e) {
+            this.dbAvailable = true;
+        } catch(Exception e) {
             Log.d(TAG, "Error creating statements: " + e.getMessage(), 3);
+            this.dbAvailable = false;
         }
     }
 
@@ -40,8 +43,6 @@ public class MySQLHelper {
     }
 
     public void insertRecord(Map s, Map i) {
-        StringBuilder sb = new StringBuilder();
-
         String query = String.format("INSERT INTO `records` (`URL`, `Domain`, `Args`, `Title`, `Head`, `Body`, " +
                 "`Raw`, `UpdateTime`, `LinksTo`, `LinkBacks`, `LoadTime`) VALUES (" +
                 "\"%s\", \"%s\", \"%s\", \"%s\", " +
@@ -50,19 +51,15 @@ public class MySQLHelper {
                 s.get("url"), s.get("domain"), s.get("args"), s.get("title"),
                 s.get("head"), s.get("body"), s.get("raw"), i.get("updatetime"),
                 i.get("linksto"), i.get("linkbacks"), i.get("loadtime"));
-        try {
-            this.statement.execute(query);
-        } catch(SQLException e) {
-            Log.d(TAG, "Error inserting record: " + e.getMessage(), 3);
-        }
+        this.query(query);
     }
 
     public int selectRecordIDByURL(String u) {
         int id = 0;
         String query = String.format("SELECT id from records WHERE url = '%s'", u);
         Log.d(TAG, query, 6);
-        try{
-            ResultSet s = this.statement.executeQuery(query);
+        ResultSet s = this.queryForResult(query);
+        try {
             while(s.next()){
                 id = s.getInt("id");
             }
@@ -70,6 +67,8 @@ public class MySQLHelper {
         } catch (SQLException e) {
             Log.d(TAG, "error: " + e.getMessage(), 3);
             return id;
+        } catch(NullPointerException e) {
+            Log.d(TAG, "error: " + e.getMessage(), 3);
         }
         return id;
     }
@@ -77,16 +76,38 @@ public class MySQLHelper {
     public void incrementLinkBack(int id) {
         int linkBacks = 0;
         String query = String.format("SELECT linkbacks FROM records WHERE id = %d", id);
-        Log.d(TAG, query, 7);
+            ResultSet s = this.queryForResult(query);
         try {
-            ResultSet s = this.statement.executeQuery(query);
-            while(s.next()){
+        while(s.next()){
                 linkBacks = s.getInt("LinkBacks");
-            }
-            linkBacks++;
-            this.statement.execute(String.format("Update records SET linkbacks = %d WHERE id = %d", linkBacks, id));
-        } catch(SQLException e) {
-            Log.d(TAG, "ERROR doing something: " + e.getMessage(), 3);
         }
+            linkBacks++;
+            this.query(String.format("Update records SET linkbacks = %d WHERE id = %d", linkBacks, id));
+        } catch(SQLException e) {
+            Log.d(TAG, "Error iterating the result: " + e.getMessage(), 3);
+        } catch(NullPointerException e) {
+            Log.d(TAG, "error: " + e.getMessage(), 3);
+        }
+    }
+
+    public void query(String query) {
+        if(!this.dbAvailable) {return;}
+        try {
+            this.statement.execute(query);
+        } catch (SQLException e) {
+            Log.d(TAG, String.format("Error running query: %s\n with query: %s", e.getMessage(), query), 3);
+        }
+    }
+
+    public ResultSet queryForResult(String query) {
+        if(!this.dbAvailable){return null;}
+        ResultSet result;
+        try {
+            result = this.statement.executeQuery(query);
+        } catch (SQLException e) {
+            Log.d(TAG, String.format("Error running query: %s\n with query: %s", e.getMessage(), query), 3);
+            result = null;
+        }
+        return result;
     }
 }
