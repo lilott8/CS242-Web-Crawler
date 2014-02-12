@@ -20,6 +20,7 @@ public class Parser {
     String TAG = "parser";
     // URL validator
     UrlValidator mURLValidator;
+    long pageLoadTime;
 
     public Parser() {
         this.mURLValidator = new UrlValidator(new String[]{"http", "https"});
@@ -27,7 +28,10 @@ public class Parser {
 
     public void parseDocument(String url) {
         try{
+            long begin = System.currentTimeMillis()/1000;
             this.mDocument = Jsoup.connect(url).get(); // get the next page
+            this.pageLoadTime = System.currentTimeMillis()/1000 - begin;
+
         } catch(IOException e) {
             Log.d(TAG,String.format("Error connecting to %s: %s", url, e.toString()), 5);
         }
@@ -54,5 +58,24 @@ public class Parser {
         return links;
     }
 
+    public String getBody() {
+        return this.mDocument.body().toString();
+    }
+
+    public String getTitle() {
+        return this.mDocument.title();
+    }
+
+    public String getWholePage() {
+        return this.mDocument.html();
+    }
+
+    public long getPageLoadTime(){
+        return this.pageLoadTime;
+    }
+
+    public String getHead() {
+        return this.mDocument.head().html();
+    }
 
 }

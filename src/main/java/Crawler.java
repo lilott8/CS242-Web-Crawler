@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by jason on 1/21/14.
@@ -17,13 +18,11 @@ public class Crawler implements Runnable {
     Parser mParser;
     // just for troubleshooting
     public String TAG = "crawler";
-    // Our fake queue, this is easier to work with than a queue in java
-    //private ArrayList<String> mURLQueue = new ArrayList<String>();
-    // validates urls so we know to follow them or not
-    //UrlValidator mURLValidator;
     private Robots mRobots;
     private String mDomain;
     private int mTid;
+    private String currentURL;
+    private MySQLHelper db;
 
     // Constructors
     public Crawler() {}
@@ -33,6 +32,8 @@ public class Crawler implements Runnable {
         this.mParser.parseDocument(url);
         this.mRobots = new Robots();
         this.loadUrls();
+        // Create a new database connection
+        this.db = new MySQLHelper();
     }
 
     public ArrayList<String> getQueue() {return LinkQueue.getQueue(this.mTid);}
@@ -47,6 +48,7 @@ public class Crawler implements Runnable {
         while(!LinkQueue.isQueueEmpty(this.mTid)) {
             // pop the first element off the queue
             el = LinkQueue.getUrl(this.mTid);
+            this.currentURL = el;
             Log.d(TAG, String.format("Attempting to crawl: %s", el), 7);
             Log.d(TAG, String.format("tid %d's Queue size is: %s", this.mTid, this.getQueueSize()), 7);
             // check for robots first, then add
@@ -120,5 +122,26 @@ public class Crawler implements Runnable {
             }
         }
     }
+
+    private void insertRow() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("url", this.currentURL); // full url
+        map.put("domain", this.mDomain); // domain of the site
+        map.put("args", "");// arguments of url after domain
+        map.put("title", this.mParser.getTitle()); // title of the page
+        map.put("head", this.mParser.getHead()); // the head of the document
+        map.put("body", this.mParser.getBody()); // page body
+        map.put("timestamp", System.currentTimeMillis()/1000); // Current timestamp
+        map.put("updatetime", 0); // when was the page updated
+        map.put("raw", this.mParser.getWholePage()); // get the whole document
+        map.put("linksto", 0); // the number of pages this links to
+        map.put("linksback", 0); // the number of pages that links back here
+        map.put("loadtime", this.mParser.getPageLoadTime()); // how long did the page take to load
+        map.put("lastupdate", 0); // ???
+
+        this.db.runPreparedStatement(map);
+
+    }
+
     public void setTid(int i) {this.mTid = i;}
 }

@@ -10,6 +10,7 @@ public class Spidey {
 
     public String TAG = "spidey";
     private static int mThreadCount;
+    public MySQLHelper db;
 
     public Spidey() {}
 
@@ -25,7 +26,6 @@ public class Spidey {
         // just a list of sites to start for our seed
         String[] eduSites = {"http://youtube.com", "http://www.niu.edu", "http://www.siu.edu",
                 "http://www.mit.edu", "http://www.harvard.edu", "http://www.ucr.edu"};
-        String TAG = "Spidey";
         // boolean check for if all our threads are out of work
         boolean isDone = false;
 
