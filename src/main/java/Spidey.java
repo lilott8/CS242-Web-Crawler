@@ -24,7 +24,7 @@ public class Spidey {
         // temp path, not implemented
         String filePath = "/Volumes/Virtual Machines/spidey/";
         // just a list of sites to start for our seed
-        String[] eduSites = {"http://youtube.com", "http://www.niu.edu", "http://www.siu.edu",
+        String[] eduSites = {"http://cnn.com", "http://www.niu.edu", "http://www.siu.edu",
                 "http://www.mit.edu", "http://www.harvard.edu", "http://www.ucr.edu"};
         // boolean check for if all our threads are out of work
         boolean isDone = false;
@@ -57,6 +57,8 @@ public class Spidey {
         for(Thread t : threads) {
             t.start();
         }
+
+        
 
         /*
         // Kill threads when done

@@ -4,9 +4,11 @@ import sun.awt.image.ImageWatched;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  * Created by jason on 1/21/14.
@@ -23,6 +25,7 @@ public class Crawler implements Runnable {
     private int mTid;
     private String currentURL;
     private MySQLHelper db;
+    private boolean isDone;
 
     // Constructors
     public Crawler() {}
@@ -40,10 +43,11 @@ public class Crawler implements Runnable {
 
     public void run() {
         String el;
+        int id = 0;
 
         Log.d(TAG, "Starting to run", 7);
         Log.d(TAG, "Queue size: " + this.getQueueSize(), 2);
-        this.printQueue();
+        //this.printQueue();
 
         while(!LinkQueue.isQueueEmpty(this.mTid)) {
             // pop the first element off the queue
@@ -66,14 +70,21 @@ public class Crawler implements Runnable {
              * be here in the first place.
              */
             this.mParser.parseDocument(el);
+            // Comment this out if we need to
+            // id = this.selectRecordIDByURL();
+            if(id > 0) {
+                this.incrementLinkBack(id);
+            } else {
+                this.insertRow();
+            }
             this.loadUrls();
             RobotRules.printKeys();
         }
         Log.d(TAG, "We ran out of urls to parse", 7);
+        this.isDone = true;
     }
 
     public int getQueueSize() {
-        Log.d(TAG, Integer.toString(this.mTid), 1);
         try {
             return LinkQueue.getQueueSize(this.mTid);
         } catch(NullPointerException e) {
@@ -124,23 +135,40 @@ public class Crawler implements Runnable {
     }
 
     private void insertRow() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("url", this.currentURL); // full url
-        map.put("domain", this.mDomain); // domain of the site
-        map.put("args", "");// arguments of url after domain
-        map.put("title", this.mParser.getTitle()); // title of the page
-        map.put("head", this.mParser.getHead()); // the head of the document
-        map.put("body", this.mParser.getBody()); // page body
-        map.put("timestamp", System.currentTimeMillis()/1000); // Current timestamp
-        map.put("updatetime", 0); // when was the page updated
-        map.put("raw", this.mParser.getWholePage()); // get the whole document
-        map.put("linksto", 0); // the number of pages this links to
-        map.put("linksback", 0); // the number of pages that links back here
-        map.put("loadtime", this.mParser.getPageLoadTime()); // how long did the page take to load
-        map.put("lastupdate", 0); // ???
+        Map<String, String> strings = new HashMap<String, String>();
+        Map<String, Integer> ints = new HashMap<String, Integer>();
+        java.util.Date date= new java.util.Date();
+        new Timestamp(date.getTime());
+        // our string based values
+        strings.put("url", this.currentURL); // full url
+        strings.put("domain", this.mDomain); // domain of the site
+        strings.put("args", "");// arguments of url after domain
+        strings.put("title", this.mParser.getTitle()); // title of the page
+        strings.put("head", this.mParser.getHead()); // the head of the document
+        strings.put("body", this.mParser.getBody()); // page body
+        strings.put("raw", this.mParser.getWholePage()); // get the whole document
+        // Our integer based values
+        ints.put("updatetime", 0); // when was the page updated
+        ints.put("linksto", 0); // the number of pages this links to
+        ints.put("linksback", 0); // the number of pages that links back here
+        ints.put("loadtime", (int) this.mParser.getPageLoadTime()); // how long did the page take to load
 
-        this.db.runPreparedStatement(map);
+        this.db.insertRecord(strings, ints);
+    }
 
+    private void updateRecord() {
+
+    }
+
+    private int selectRecordIDByURL() {
+        return this.db.selectRecordIDByURL(String.format(
+                "SELECT RecordID from Records WHERE url LIKE \"%%%s%\"",
+                this.currentURL)
+        );
+    }
+
+    private void incrementLinkBack(int id) {
+        this.db.incrementLinkBack(id);
     }
 
     public void setTid(int i) {this.mTid = i;}

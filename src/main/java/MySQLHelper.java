@@ -3,6 +3,7 @@
  * source from http://www.programcreek.com/2012/12/how-to-make-a-web-crawler-using-java/
  */
 import java.sql.*;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.mysql.jdbc.Driver;
@@ -17,7 +18,7 @@ public class MySQLHelper {
     String user = "root";
     String password = "root";
 
-    private Connection conn = null;
+    private Connection connection = null;
     private String createStatement;
     public String TAG = "mysqlhelper";
     private Connector connector;
@@ -28,46 +29,67 @@ public class MySQLHelper {
 
     public MySQLHelper() {
         this.connector = Connector.getInstance();
-        this.conn = this.connector.getConnection();
-
-        /*try {
-            Class.forName("com.mysql.jdbc.Driver");
-            String url = String.format("jdbc:mysql://%s:%d/%s", this.server, this.port, this.database);
-            conn = DriverManager.getConnection(url, this.user, this.password);
-
-            this.pStatement = conn.prepareStatement("CREATE DATABASE IF NOT EXISTS ?");
-            this.pStatement.setString(1, this.database);
-            this.pStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        this.connection = this.connector.getConnection();
+        try {
+            this.statement = this.connection.createStatement();
+        } catch(SQLException e) {
+            Log.d(TAG, "Error creating statements: " + e.getMessage(), 2);
         }
-        catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        */
-
     }
 
-    public Connection getConnection() {return conn;}
+    //public Connection getConnection() {return connection;}
 
     public ResultSet runSql(String sql) throws SQLException {
-        Statement sta = conn.createStatement();
+        Statement sta = connection.createStatement();
         return sta.executeQuery(sql);
     }
 
     public boolean runSql2(String sql) throws SQLException {
-        Statement sta = conn.createStatement();
+        Statement sta = connection.createStatement();
         return sta.execute(sql);
     }
 
-    public void runPreparedStatement(Map m) {
+    public void insertRecord(Map s, Map i) {
+        StringBuilder sb = new StringBuilder();
 
+        String query = String.format("INSERT INTO `Records` (`URL`, `Domain`, `Args`, `Title`, `Head`, `Body`, " +
+                "`Raw`, `UpdateTime`, `LinksTo`, `LinksBack`, `LoadTime`) VALUES (" +
+                "\"%s\", \"%s\", \"%s\", \"%s\", " +
+                "\"%s\", \"%s\", \"%s\", %d, " +
+                "%d, %d, %d)",
+                s.get("url"), s.get("domain"), s.get("args"), s.get("title"),
+                s.get("head"), s.get("body"), s.get("raw"), i.get("updatetime"),
+                i.get("linksto"), i.get("linksback"), i.get("loadtime"));
+        try {
+            this.statement.execute(query);
+        } catch(SQLException e) {
+            Log.d(TAG, "Error inserting record: " + e.getMessage(), 1);
+        }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        if (conn != null || !conn.isClosed()) {
-            conn.close();
+    public int selectRecordIDByURL(String u) {
+        int id = 0;
+        Log.d(TAG, u, 1);
+        try{
+            ResultSet s = this.statement.executeQuery(u);
+            while(s.next()){
+                id = s.getInt(0);
+            }
+        } catch (SQLException e) {
+            return id;
+        }
+        return id;
+    }
+
+    public void incrementLinkBack(int id) {
+        int linkBacks = 0;
+        try {
+            ResultSet s = this.statement.executeQuery("SELECT linkback FROM Records WHERE RecordID = " + id);
+            linkBacks = s.getInt(0);
+            linkBacks++;
+            this.statement.execute(String.format("Update Records SET linkbacks = %d WHERE RecordID = %d", linkBacks, id));
+        } catch(SQLException e) {
+            Log.d(TAG, "ERROR doing something: "+e.getMessage(), 1);
         }
     }
 }

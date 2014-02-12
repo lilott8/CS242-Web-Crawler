@@ -3,7 +3,7 @@
  */
 public abstract class Log {
 
-    public static int outputLevel = 6;
+    public static int outputLevel = 4;
 
     public static void d(String tag, String m, int l) {
         if(l <= outputLevel) {

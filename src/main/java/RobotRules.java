@@ -87,7 +87,6 @@ public class RobotRules {
      * @return boolean of if the rule is in the mRules
      */
     public static synchronized boolean isInRobots(String domain) {
-        RobotRules.printRules(domain);
         return mRules.containsKey(domain);
     }
 

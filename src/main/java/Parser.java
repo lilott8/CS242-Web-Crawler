@@ -1,3 +1,4 @@
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -59,15 +60,15 @@ public class Parser {
     }
 
     public String getBody() {
-        return this.mDocument.body().toString();
+        return StringEscapeUtils.escapeHtml(this.mDocument.body().toString());
     }
 
     public String getTitle() {
-        return this.mDocument.title();
+        return StringEscapeUtils.escapeHtml(this.mDocument.title());
     }
 
     public String getWholePage() {
-        return this.mDocument.html();
+        return StringEscapeUtils.escapeHtml(this.mDocument.html());
     }
 
     public long getPageLoadTime(){
@@ -75,7 +76,7 @@ public class Parser {
     }
 
     public String getHead() {
-        return this.mDocument.head().html();
+        return StringEscapeUtils.escapeHtml(this.mDocument.head().html());
     }
 
 }

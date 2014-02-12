@@ -64,15 +64,14 @@ public class Connector {
                 "  `Domain` text NOT NULL,\n" +
                 "  `Args` text NOT NULL,\n" +
                 "  `Title` text NOT NULL,\n" +
-                "  `Head` text NOT NULL,\n" +
-                "  `Body` text NOT NULL,\n" +
-                "  `TimeStamp` TIMESTAMP NOT NULL,\n" +
-                "  `UpdateTime` INT(11) NOT NULL,\n" +
-                "  `Raw` text NOT NULL,\n" +
+                "  `Head` longtext NOT NULL,\n" +
+                "  `Body` longtext NOT NULL,\n" +
+                "  `Raw` longtext NOT NULL,\n" +
+                "  `TimeStamp` TIMESTAMP default now(),\n" +
+                "  `UpdateTime` TIMESTAMP null,\n" +
                 "  `LinksTo` INT(11) NOT NULL,\n" +
                 "  `LinksBack` INT(11) NOT NULL,\n" +
                 "  `LoadTime` INT(11) NOT NULL,\n" +
-                "  `LastUpdate` TIMESTAMP NOT NULL,\n" +
                 "   PRIMARY KEY (`RecordID`)\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
         try {
