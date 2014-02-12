@@ -1,6 +1,3 @@
-import crawlercommons.robots.RobotUtils;
-import sun.awt.image.ImageWatched;
-
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -8,14 +5,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  * Created by jason on 1/21/14.
  */
 public class Crawler implements Runnable {
-    // File for where to save things, not implemented
-    // private File mFolderPath;
     // Parser to actually parse our documents
     Parser mParser;
     // just for troubleshooting
@@ -25,18 +19,24 @@ public class Crawler implements Runnable {
     private int mTid;
     private String currentURL;
     private MySQLHelper db;
-    private boolean isDone;
+    private boolean isDone = false;
+    private boolean usDB = true;
 
     // Constructors
     public Crawler() {}
-    public Crawler(String fn, String url) {
+    public Crawler(String[] url) {
         //this.mFolderPath = new File(fn);
         this.mParser = new Parser();
-        this.mParser.parseDocument(url);
         this.mRobots = new Robots();
-        this.loadUrls();
         // Create a new database connection
-        this.db = new MySQLHelper();
+        if(this.usDB) {
+            this.db = new MySQLHelper();
+        }
+        for(String s : url) {
+            LinkQueue.addLink(s);
+        }
+        //this.mParser.parseDocument(url);
+        //this.loadUrls();
     }
 
     public ArrayList<String> getQueue() {return LinkQueue.getQueue(this.mTid);}
@@ -46,7 +46,7 @@ public class Crawler implements Runnable {
         int id = 0;
 
         Log.d(TAG, "Starting to run", 7);
-        Log.d(TAG, "Queue size: " + this.getQueueSize(), 2);
+        Log.d(TAG, this.mTid + "'s Queue size: " + this.getQueueSize(), 6);
         //this.printQueue();
 
         while(!LinkQueue.isQueueEmpty(this.mTid)) {
@@ -56,7 +56,6 @@ public class Crawler implements Runnable {
             Log.d(TAG, String.format("Attempting to crawl: %s", el), 7);
             Log.d(TAG, String.format("tid %d's Queue size is: %s", this.mTid, this.getQueueSize()), 7);
             // check for robots first, then add
-            // if !super.isInRobots()
             try {
                 this.mDomain = Robots.getDomain(el);
             } catch(URISyntaxException e) {/* do nothing */}
@@ -71,7 +70,7 @@ public class Crawler implements Runnable {
              */
             this.mParser.parseDocument(el);
             // Comment this out if we need to
-            // id = this.selectRecordIDByURL();
+            id = this.selectRecordIDByURL();
             if(id > 0) {
                 this.incrementLinkBack(id);
             } else {
@@ -80,7 +79,7 @@ public class Crawler implements Runnable {
             this.loadUrls();
             RobotRules.printKeys();
         }
-        Log.d(TAG, "We ran out of urls to parse", 7);
+        Log.d(TAG, "============THREAD "+ this.mTid +" RAN OUT OF URLS============", 1);
         this.isDone = true;
     }
 
@@ -111,7 +110,7 @@ public class Crawler implements Runnable {
                 TODO: parse the url to get just the right side of the url
              */
             // Log.d(TAG, s, 1);
-            //Log.d(TAG, String.format("Right part of url: %s", LinkQueue.getFirstPartOfURL(s)), 1);
+            Log.d(TAG, String.format("Right part of url: %s", LinkQueue.getFirstPartOfURL(s)), 6);
             try {
                 URL url = new URL(s);
                 path = url.getPath();
@@ -122,12 +121,12 @@ public class Crawler implements Runnable {
             args = path.split("/");
             try {
                 if(RobotRules.isAllowed(this.mDomain, args[1])) {
-                    LinkQueue.addLink(this.mTid, s);
+                    LinkQueue.addLink(s);
                 }
                 //Log.d(TAG, String.format("We cannot crawl: %s", s), 3);
             } catch(ArrayIndexOutOfBoundsException e) {
                 if(RobotRules.isAllowed(this.mDomain, "")) {
-                    LinkQueue.addLink(this.mTid, s);
+                    LinkQueue.addLink(s);
                 }
                 break;
             }
@@ -150,10 +149,12 @@ public class Crawler implements Runnable {
         // Our integer based values
         ints.put("updatetime", 0); // when was the page updated
         ints.put("linksto", 0); // the number of pages this links to
-        ints.put("linksback", 0); // the number of pages that links back here
+        ints.put("linkbacks", 0); // the number of pages that links back here
         ints.put("loadtime", (int) this.mParser.getPageLoadTime()); // how long did the page take to load
 
-        this.db.insertRecord(strings, ints);
+        if(this.usDB) {
+            this.db.insertRecord(strings, ints);
+        }
     }
 
     private void updateRecord() {
@@ -161,15 +162,20 @@ public class Crawler implements Runnable {
     }
 
     private int selectRecordIDByURL() {
-        return this.db.selectRecordIDByURL(String.format(
-                "SELECT RecordID from Records WHERE url LIKE \"%%%s%\"",
-                this.currentURL)
-        );
+        if(this.usDB) {
+            return this.db.selectRecordIDByURL(this.currentURL);
+        } else {
+            return -1;
+        }
     }
 
     private void incrementLinkBack(int id) {
-        this.db.incrementLinkBack(id);
+        if(this.usDB) {
+            this.db.incrementLinkBack(id);
+        }
     }
 
     public void setTid(int i) {this.mTid = i;}
+    public boolean getIsDone() {return this.isDone;}
+    public void setIsDone(boolean b){this.isDone = b;}
 }

@@ -11,22 +11,23 @@ public class Connector {
     public static Connector connector;
 
     //  private String server = "localhost";
-    private String server = "10.211.55.4";
-    private int port = 3306;
+    private static String server = "localhost";
+    private static int port = 3306;
     private static String database = "Spidey";
-    private String user = "root";
-    private String password = "root";
+    private static String user = "root";
+    private static String password = "root";
 
     private static Connection connection;
     private static final String TAG = "connector";
 
     private Connector() {
+        Log.d(TAG, String.format("User: %s, Password: %s, Server: %s", user, password, server), 7);
         try {
             Class.forName("com.mysql.jdbc.Driver");
             String url = String.format("jdbc:mysql://%s:%d/%s",
-                    this.server, this.port, database);
+                    server, port, database);
             // Connect to our database
-            connection = DriverManager.getConnection(url, this.user, this.password);
+            connection = DriverManager.getConnection(url, user, password);
             // Check to see if our database exists
             checkForDatabase();
             // check for our table(s)
@@ -58,28 +59,28 @@ public class Connector {
     }
 
     public static void checkForTables() {
-        String createStatement = "CREATE TABLE IF NOT EXISTS `Records`(\n" +
-                "  `RecordID` INT(11) NOT NULL AUTO_INCREMENT,\n" +
-                "  `URL` text NOT NULL,\n" +
-                "  `Domain` text NOT NULL,\n" +
-                "  `Args` text NOT NULL,\n" +
-                "  `Title` text NOT NULL,\n" +
-                "  `Head` longtext NOT NULL,\n" +
-                "  `Body` longtext NOT NULL,\n" +
-                "  `Raw` longtext NOT NULL,\n" +
-                "  `TimeStamp` TIMESTAMP default now(),\n" +
-                "  `UpdateTime` TIMESTAMP null,\n" +
-                "  `LinksTo` INT(11) NOT NULL,\n" +
-                "  `LinksBack` INT(11) NOT NULL,\n" +
-                "  `LoadTime` INT(11) NOT NULL,\n" +
-                "   PRIMARY KEY (`RecordID`)\n" +
+        String createStatement = "CREATE TABLE IF NOT EXISTS `records`(\n" +
+                "  `id` INT(11) NOT NULL AUTO_INCREMENT,\n" +
+                "  `url` text NOT NULL,\n" +
+                "  `domain` text NOT NULL,\n" +
+                "  `args` text NOT NULL,\n" +
+                "  `title` text NOT NULL,\n" +
+                "  `head` longtext NOT NULL,\n" +
+                "  `body` longtext NOT NULL,\n" +
+                "  `raw` longtext NOT NULL,\n" +
+                "  `timestamp` TIMESTAMP default now(),\n" +
+                "  `updatetime` TIMESTAMP null,\n" +
+                "  `linksto` INT(11) NOT NULL,\n" +
+                "  `linkbacks` INT(11) NOT NULL,\n" +
+                "  `loadtime` INT(11) NOT NULL,\n" +
+                "   PRIMARY KEY (`id`)\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
         try {
             Statement create = connection.createStatement();
             create.execute(createStatement);
-            Log.d(TAG, "Attempting to create the table", 5);
+            Log.d(TAG, "Attempting to create the table", 7);
         } catch(SQLException e) {
-            Log.d(TAG, "Error creating table." + e.getMessage(), 5);
+            Log.d(TAG, "Error creating table." + e.getMessage(), 1);
         }
     }
 
@@ -91,4 +92,8 @@ public class Connector {
             Log.d(TAG, "Error executing query " + e.toString(), 3);
         }
     }
+
+    public static void setDatabaseAddress(String s) {server = s;}
+    public static void setDatabaseUser(String s) {user = s;}
+    public static void setDatabasePassword(String s) {password = s;}
 }

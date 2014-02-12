@@ -10,11 +10,12 @@ public class LinkQueue {
 
     private static Map<Integer, ArrayList<String>> mLinkQueue = new HashMap<Integer, ArrayList<String>>();
     public static final String TAG = "linkqueue";
+    public static int mNumThreads;
 
     // hash the url %5 determines the bucket it belongs in
-    public static synchronized void addLink(int tid, String url) {
+    public static synchronized void addLink(String url) {
         // which bucket does the url belong in
-        int bucket = Math.abs(url.hashCode() % Spidey.getThreadCount());
+        int bucket = Math.abs(url.hashCode() % mNumThreads);
         // Log.d(TAG, String.format("Putting: %s in bucket: %d", url, bucket), 3);
         // List of urls for a thread to crawl
         ArrayList<String> items = mLinkQueue.get(bucket);
@@ -28,7 +29,7 @@ public class LinkQueue {
             // add if item is not already in list
             if(!items.contains(url)) items.add(url);
         }
-        Log.d(TAG, String.format("Bucket: %d\t Queue Size: %d", bucket, mLinkQueue.get(bucket).size()), 1);
+        Log.d(TAG, String.format("Bucket: %d\t Queue Size: %d", bucket, mLinkQueue.get(bucket).size()), 6);
     }
 
     public static ArrayList<String> getQueue(int tid) {
@@ -56,6 +57,8 @@ public class LinkQueue {
     }
 
     public static String getFirstPartOfURL(String s) {
-        return s.split("/")[0];
+        return s.split("/")[2];
     }
+
+    public static void setNumThreads(int i) {mNumThreads = i;}
 }

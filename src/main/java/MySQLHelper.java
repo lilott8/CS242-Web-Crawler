@@ -3,20 +3,10 @@
  * source from http://www.programcreek.com/2012/12/how-to-make-a-web-crawler-using-java/
  */
 import java.sql.*;
-import java.util.HashMap;
 import java.util.Map;
-
-import com.mysql.jdbc.Driver;
 
 
 public class MySQLHelper {
-
-    //String server = "localhost";
-    String server = "192.168.1.128";
-    int port = 3306;
-    String database = "Spidey";
-    String user = "root";
-    String password = "root";
 
     private Connection connection = null;
     private String createStatement;
@@ -33,7 +23,7 @@ public class MySQLHelper {
         try {
             this.statement = this.connection.createStatement();
         } catch(SQLException e) {
-            Log.d(TAG, "Error creating statements: " + e.getMessage(), 2);
+            Log.d(TAG, "Error creating statements: " + e.getMessage(), 3);
         }
     }
 
@@ -52,30 +42,33 @@ public class MySQLHelper {
     public void insertRecord(Map s, Map i) {
         StringBuilder sb = new StringBuilder();
 
-        String query = String.format("INSERT INTO `Records` (`URL`, `Domain`, `Args`, `Title`, `Head`, `Body`, " +
-                "`Raw`, `UpdateTime`, `LinksTo`, `LinksBack`, `LoadTime`) VALUES (" +
+        String query = String.format("INSERT INTO `records` (`URL`, `Domain`, `Args`, `Title`, `Head`, `Body`, " +
+                "`Raw`, `UpdateTime`, `LinksTo`, `LinkBacks`, `LoadTime`) VALUES (" +
                 "\"%s\", \"%s\", \"%s\", \"%s\", " +
                 "\"%s\", \"%s\", \"%s\", %d, " +
                 "%d, %d, %d)",
                 s.get("url"), s.get("domain"), s.get("args"), s.get("title"),
                 s.get("head"), s.get("body"), s.get("raw"), i.get("updatetime"),
-                i.get("linksto"), i.get("linksback"), i.get("loadtime"));
+                i.get("linksto"), i.get("linkbacks"), i.get("loadtime"));
         try {
             this.statement.execute(query);
         } catch(SQLException e) {
-            Log.d(TAG, "Error inserting record: " + e.getMessage(), 1);
+            Log.d(TAG, "Error inserting record: " + e.getMessage(), 3);
         }
     }
 
     public int selectRecordIDByURL(String u) {
         int id = 0;
-        Log.d(TAG, u, 1);
+        String query = String.format("SELECT id from records WHERE url = '%s'", u);
+        Log.d(TAG, query, 6);
         try{
-            ResultSet s = this.statement.executeQuery(u);
+            ResultSet s = this.statement.executeQuery(query);
             while(s.next()){
-                id = s.getInt(0);
+                id = s.getInt("id");
             }
+            Log.d(TAG, "Id from selectRecordIDBYURL: " + id, 7);
         } catch (SQLException e) {
+            Log.d(TAG, "error: " + e.getMessage(), 3);
             return id;
         }
         return id;
@@ -83,13 +76,17 @@ public class MySQLHelper {
 
     public void incrementLinkBack(int id) {
         int linkBacks = 0;
+        String query = String.format("SELECT linkbacks FROM records WHERE id = %d", id);
+        Log.d(TAG, query, 7);
         try {
-            ResultSet s = this.statement.executeQuery("SELECT linkback FROM Records WHERE RecordID = " + id);
-            linkBacks = s.getInt(0);
+            ResultSet s = this.statement.executeQuery(query);
+            while(s.next()){
+                linkBacks = s.getInt("LinkBacks");
+            }
             linkBacks++;
-            this.statement.execute(String.format("Update Records SET linkbacks = %d WHERE RecordID = %d", linkBacks, id));
+            this.statement.execute(String.format("Update records SET linkbacks = %d WHERE id = %d", linkBacks, id));
         } catch(SQLException e) {
-            Log.d(TAG, "ERROR doing something: "+e.getMessage(), 1);
+            Log.d(TAG, "ERROR doing something: " + e.getMessage(), 3);
         }
     }
 }

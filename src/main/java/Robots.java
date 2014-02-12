@@ -1,12 +1,8 @@
-import com.google.common.net.InternetDomainName;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,7 +55,7 @@ public class Robots {
             for(String s : this.accessMethods) {
                 // form the URI for the robots
                 url = new URL(s + u + "/robots.txt");
-                Log.d(TAG, String.format("Attempting to grab: %s", s+u+"/robots.txt"), 6);
+                Log.d(TAG, String.format("Attempting to grab: %s", s + u + "/robots.txt"), 6);
                 try {
                     // attempt to get the robots file
                     this.getInputStream(url);
@@ -123,8 +119,7 @@ public class Robots {
     public static String getDomain(String u) throws URISyntaxException {
         try {
             URL urls = new URL(u);
-            String[] domain = urls.getHost().split("\\.");
-            return domain[domain.length-2] + "." + domain[domain.length-1];
+            return urls.getAuthority();
         } catch(MalformedURLException e) {
             Log.d("robots", "MalformedURL: " + e.getMessage(), 4);
             return null;

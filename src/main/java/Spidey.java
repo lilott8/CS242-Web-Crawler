@@ -1,7 +1,5 @@
-import java.lang.reflect.Array;
-import java.net.URISyntaxException;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by jason on 1/21/14.
@@ -10,41 +8,76 @@ public class Spidey {
 
     public String TAG = "spidey";
     private static int mThreadCount;
-    public MySQLHelper db;
-
-    public Spidey() {}
 
     public static void main(String[] args) {
         // Number of crawlers/threads to create
-        int totalCrawlers;
+        int totalCrawlers = 2;
         // Arraylist holding our threads
         ArrayList<Thread> threads = new ArrayList<Thread>();
         // Arraylist holding our crawler
         ArrayList<Crawler> crawlers = new ArrayList<Crawler>();
-        // temp path, not implemented
-        String filePath = "/Volumes/Virtual Machines/spidey/";
         // just a list of sites to start for our seed
-        String[] eduSites = {"http://cnn.com", "http://www.niu.edu", "http://www.siu.edu",
-                "http://www.mit.edu", "http://www.harvard.edu", "http://www.ucr.edu"};
+        String[][] eduSites = {
+                {"http://cnn.com", "http://www.niu.edu", "http://www.siu.edu","http://www.addictinggames.com"},
+                {"http://www.mit.edu", "http://www.harvard.edu", "http://www.ucr.edu", "http://www.yahoo.com"},
+                {"http://bbc.co.uk", "http://www.stackoverflow.com", "http://www.serverfault.com", "http://www.utah.gov"},
+                {"http://www.digg.com", "http://www.bps101.net", "http://www.reddit.com", "http://www.nytimes.com"},
+                {"http://www.drudgereport.com","http://www.berkeley.edu","http://www.whitehouse.gov", "http://www.foxnews.com"}
+        };
         // boolean check for if all our threads are out of work
-        boolean isDone = false;
+        int isDone = 0;
+        String TAG = "spidey";
 
-        if(args.length > 0) {
-        //if(!args[0].isEmpty()) {
-            totalCrawlers = Integer.parseInt(args[0]);
-            if(totalCrawlers > 5) {
-                totalCrawlers = 5;
-            }
-        } else {
-            totalCrawlers = 2;
+        switch(args.length) {
+            case 0:
+                totalCrawlers = 2;
+                Log.setOutputLevel(3);
+                break;
+            // crawlers
+            case 1:
+                totalCrawlers = Spidey.validateCrawlers(Integer.parseInt(args[0]));
+                Log.setOutputLevel(3);
+                break;
+            // log level
+            case 2:
+                totalCrawlers = Spidey.validateCrawlers(Integer.parseInt(args[0]));
+                Log.setOutputLevel(Spidey.validateLogOutput(Integer.parseInt(args[1])));
+                break;
+            // mysql database
+            case 3:
+                totalCrawlers = Spidey.validateCrawlers(Integer.parseInt(args[0]));
+                Log.setOutputLevel(Spidey.validateLogOutput(Integer.parseInt(args[1])));
+                Connector.setDatabaseAddress(args[2]);
+                Connector.setDatabaseUser("root");
+                Connector.setDatabasePassword("root");
+                break;
+            // mysql user
+            case 4:
+                totalCrawlers = Spidey.validateCrawlers(Integer.parseInt(args[0]));
+                Log.setOutputLevel(Spidey.validateLogOutput(Integer.parseInt(args[1])));
+                Connector.setDatabaseAddress(args[2]);
+                Connector.setDatabaseUser(args[3]);
+                Connector.setDatabasePassword("root");
+                break;
+            // database location
+            case 5:
+                totalCrawlers = Spidey.validateCrawlers(Integer.parseInt(args[0]));
+                Log.setOutputLevel(Spidey.validateLogOutput(Integer.parseInt(args[1])));
+                Connector.setDatabaseAddress(args[2]);
+                Connector.setDatabaseUser(args[3]);
+                Connector.setDatabasePassword(args[4]);
+                break;
         }
-
+        //Connector connector = Connector.getInstance();
         mThreadCount = totalCrawlers;
+        isDone = totalCrawlers;
+
+        LinkQueue.setNumThreads(mThreadCount);
 
         // This primes our seed for each crawler
         for(int i=0; i<totalCrawlers;i++) {
             // This allows us to save our crawler in our arraylist
-            Crawler c = new Crawler(filePath, eduSites[i]);
+            Crawler c = new Crawler(eduSites[i]);
             c.setTid(i);
             crawlers.add(c);
             // let it be threadable
@@ -58,31 +91,44 @@ public class Spidey {
             t.start();
         }
 
-        
+        Log.d(TAG, "There are " + crawlers.size() + " crawlers ready to sling!", 7);
 
-        /*
-        // Kill threads when done
         int pos = 0;
-        while(!isDone) {
+        while(isDone > 0) {
+            pos = 0;
             for(Crawler c : crawlers) {
-                if(c.getQueueSize() < 1) {
-                    pos = crawlers.indexOf(c);
-                    threads.remove(pos);
+                // we are done, but there might still be work to do
+                if(c.getIsDone()) {
+                    isDone--;
+                    // check to see if there are things to crawl
+                    if(c.getQueueSize() > 0) {
+                        // restart the thread if the queue has urls
+                        threads.add(pos, new Thread(c));
+                        threads.get(pos).start();
+                        isDone++;
+                        Log.d(TAG, "============RESTARTING THREAD: " + pos + "============", 7);
+                    }
                 }
+                pos++;
             }
-            if(threads.size() < 1) {
-                isDone = true;
-                Log.d(TAG, "We are done crawling!", 7);
-            }
-        } */
+        }
         /**
          // easy way to cycle through them all
          for(Crawler c : crawlers) {
          }
          **/
-
-        System.out.println("There are " + crawlers.size() + " crawlers ready to sling!");
+    Log.d(TAG, "All crawlers are done.", 1);
     }
 
     public static int getThreadCount() {return mThreadCount;}
+
+    public static int validateCrawlers(int i) {
+        if(i < 1 || i > 5) { return 2; }
+        else { return i; }
+    }
+
+    public static int validateLogOutput(int i) {
+        if(i < 1 || i > 7) { return 3; }
+        else { return i; }
+    }
 }
